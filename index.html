@@ -1,0 +1,37 @@
+<script>
+    async function prosesAI() {
+        const text = document.getElementById('inputText').value.trim();
+        const resultCard = document.getElementById('resultCard');
+        const outputResult = document.getElementById('outputResult');
+
+        if (!text) {
+            alert("Naskah tidak boleh kosong!");
+            return;
+        }
+
+        resultCard.style.display = "block";
+        outputResult.innerText = "Sedang dianalisis oleh AI PenaRasa...";
+
+        try {
+            // Kita memanggil backend Vercel kita sendiri, bukan Google
+            const response = await fetch('/api/proses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+
+            const data = await response.json();
+            
+            // Mengolah kembalian dari Vercel
+            if (data.candidates && data.candidates[0].content) {
+                outputResult.innerText = data.candidates[0].content.parts[0].text;
+            } else if (data.error) {
+                outputResult.innerText = "Error dari Server: " + (data.error.message || data.error);
+            } else {
+                outputResult.innerText = "Terjadi kesalahan pada struktur data balasan.";
+            }
+        } catch (error) {
+            outputResult.innerText = "Gagal terhubung ke server PenaRasa: " + error.message;
+        }
+    }
+</script>
